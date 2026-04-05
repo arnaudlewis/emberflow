@@ -278,7 +278,7 @@ jobs:
 
           mkdir -p release
           STAGING="release/staging"
-          ARCHIVE="release/emberflow-${TAG_NAME}-${PLATFORM}.tar.gz"
+          ARCHIVE="release/${TAG_NAME}-${PLATFORM}.tar.gz"
 
           mkdir -p "$STAGING"
           cp "target/${PLATFORM}/release/emberflow" "$STAGING/"
@@ -380,10 +380,10 @@ jobs:
           set -euo pipefail
 
           cd release
-          echo "sha_darwin_arm64=$(sha256sum emberflow-${{ needs.prepare.outputs.new_tag }}-aarch64-apple-darwin.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
-          echo "sha_darwin_x86=$(sha256sum emberflow-${{ needs.prepare.outputs.new_tag }}-x86_64-apple-darwin.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
-          echo "sha_linux_x86=$(sha256sum emberflow-${{ needs.prepare.outputs.new_tag }}-x86_64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
-          echo "sha_linux_arm64=$(sha256sum emberflow-${{ needs.prepare.outputs.new_tag }}-aarch64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_darwin_arm64=$(sha256sum ${{ needs.prepare.outputs.new_tag }}-aarch64-apple-darwin.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_darwin_x86=$(sha256sum ${{ needs.prepare.outputs.new_tag }}-x86_64-apple-darwin.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_linux_x86=$(sha256sum ${{ needs.prepare.outputs.new_tag }}-x86_64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_linux_arm64=$(sha256sum ${{ needs.prepare.outputs.new_tag }}-aarch64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Checkout homebrew-tap
         uses: actions/checkout@v5
@@ -409,7 +409,7 @@ jobs:
           BASE_URL="https://github.com/${REPO}/releases/download/${TAG}"
 
           cat > tap/Formula/emberflow.rb << FORMULA
-          class EmberFlow < Formula
+          class Emberflow < Formula
             desc "Local-first canonical MCP runtime and product surface for EmberFlow"
             homepage "https://github.com/${REPO}"
             version "${VERSION}"
@@ -417,20 +417,20 @@ jobs:
 
             on_macos do
               if Hardware::CPU.arm?
-                url "${BASE_URL}/emberflow-${TAG}-aarch64-apple-darwin.tar.gz"
+                url "${BASE_URL}/${TAG}-aarch64-apple-darwin.tar.gz"
                 sha256 "${SHA_DARWIN_ARM64}"
               else
-                url "${BASE_URL}/emberflow-${TAG}-x86_64-apple-darwin.tar.gz"
+                url "${BASE_URL}/${TAG}-x86_64-apple-darwin.tar.gz"
                 sha256 "${SHA_DARWIN_X86}"
               end
             end
 
             on_linux do
               if Hardware::CPU.arm?
-                url "${BASE_URL}/emberflow-${TAG}-aarch64-unknown-linux-gnu.tar.gz"
+                url "${BASE_URL}/${TAG}-aarch64-unknown-linux-gnu.tar.gz"
                 sha256 "${SHA_LINUX_ARM64}"
               else
-                url "${BASE_URL}/emberflow-${TAG}-x86_64-unknown-linux-gnu.tar.gz"
+                url "${BASE_URL}/${TAG}-x86_64-unknown-linux-gnu.tar.gz"
                 sha256 "${SHA_LINUX_X86}"
               end
             end
