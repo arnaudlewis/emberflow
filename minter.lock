@@ -1,0 +1,532 @@
+{
+  "benchmark_files": {},
+  "nfrs": {},
+  "specs": {
+    "specs/emberflow-canonical-track-model.spec": {
+      "behaviors": [
+        "canonical-track-resolves-project-state-root",
+        "canonical-track-allows-root-override",
+        "canonical-track-persists-resume-metadata",
+        "canonical-track-stores-ordered-brief-sections",
+        "canonical-track-stores-ordered-plan-structure",
+        "canonical-plan-items-remain-distinct-from-runtime-tasks",
+        "canonical-track-imports-existing-track-directory",
+        "canonical-track-rejects-plan-item-without-stable-placement"
+      ],
+      "dependencies": [
+        "specs/emberflow-runtime-store.spec",
+        "specs/emberflow-project-layout.spec"
+      ],
+      "hash": "789e14709cd3ce91d3e88078254f39414017505ac9eabe8b0cb69e3d27d9ecde",
+      "nfrs": [],
+      "test_files": {
+        "tests/project_layout.rs": {
+          "covers": [
+            "canonical-track-allows-root-override",
+            "canonical-track-resolves-project-state-root"
+          ],
+          "hash": "682ebbaddb8e39ddfa04c9a739e62e7afa22741140074d7bd7659004a935db34"
+        },
+        "tests/runtime_store.rs": {
+          "covers": [
+            "canonical-plan-items-remain-distinct-from-runtime-tasks",
+            "canonical-track-imports-existing-track-directory",
+            "canonical-track-persists-resume-metadata",
+            "canonical-track-rejects-plan-item-without-stable-placement",
+            "canonical-track-stores-ordered-brief-sections",
+            "canonical-track-stores-ordered-plan-structure"
+          ],
+          "hash": "126af98c8a21d0c68309a8c51b7b30e216bfb5fbb270337cf68308a248475e75"
+        }
+      }
+    },
+    "specs/emberflow-client-contract.spec": {
+      "behaviors": [
+        "client-initializes-before-tracked-work",
+        "client-reads-self-describing-emberflow-bootstrap",
+        "missing-workspace-root-fails-explicitly",
+        "canonical-state-remains-authoritative",
+        "client-loads-minimal-context-before-resume",
+        "client-blocks-planned-work-without-resolved-track",
+        "root-declares-durable-track-transitions",
+        "advisory-updates-do-not-write-canonical-track-state",
+        "client-may-list-readable-resources-after-bootstrap",
+        "client-may-read-dynamic-knowledge-views-before-resume",
+        "client-may-read-display-ready-transparency-resource",
+        "durable-mutations-use-emberflow-surface",
+        "bootstrap-displays-required-transparency-fields",
+        "transparency-may-include-enriched-task-visibility",
+        "missing-transparency-fields-are-marked-unavailable",
+        "post-mutation-transparency-reloads-canonical-state",
+        "handoff-displays-current-emberflow-state",
+        "emberflow-unavailable-never-produces-guessed-canonical-state",
+        "contract-applies-uniformly-to-all-clients"
+      ],
+      "dependencies": [
+        "specs/emberflow-mcp-surface.spec",
+        "specs/emberflow-mcp-stdio-transport.spec",
+        "specs/emberflow-project-layout.spec"
+      ],
+      "hash": "6eb327c78eaf3d847d6bd8a7af28fe599d2a53e1f680a4bda85ef8495e8d2058",
+      "nfrs": [],
+      "test_files": {
+        "tests/claude_adapter.rs": {
+          "covers": [
+            "bootstrap-displays-required-transparency-fields",
+            "canonical-state-remains-authoritative",
+            "contract-applies-uniformly-to-all-clients",
+            "durable-mutations-use-emberflow-surface",
+            "handoff-displays-current-emberflow-state",
+            "missing-transparency-fields-are-marked-unavailable",
+            "post-mutation-transparency-reloads-canonical-state"
+          ],
+          "hash": "63e14243557041761ac33c2c531b7ee2652eb3941e1653ee578b2c788f60d0cb"
+        },
+        "tests/client_contract.rs": {
+          "covers": [
+            "client-initializes-before-tracked-work",
+            "client-loads-minimal-context-before-resume",
+            "client-may-list-readable-resources-after-bootstrap",
+            "client-may-read-display-ready-transparency-resource",
+            "client-may-read-dynamic-knowledge-views-before-resume",
+            "client-reads-self-describing-emberflow-bootstrap",
+            "durable-mutations-use-emberflow-surface",
+            "emberflow-unavailable-never-produces-guessed-canonical-state",
+            "missing-workspace-root-fails-explicitly",
+            "transparency-may-include-enriched-task-visibility"
+          ],
+          "hash": "53aa9feb45fd3b6055bccd65e6f33b3f7f129f395634aa366f7f00a9db739f25"
+        },
+        "tests/codex_adapter.rs": {
+          "covers": [
+            "advisory-updates-do-not-write-canonical-track-state",
+            "bootstrap-displays-required-transparency-fields",
+            "canonical-state-remains-authoritative",
+            "client-blocks-planned-work-without-resolved-track",
+            "client-initializes-before-tracked-work",
+            "client-loads-minimal-context-before-resume",
+            "contract-applies-uniformly-to-all-clients",
+            "durable-mutations-use-emberflow-surface",
+            "emberflow-unavailable-never-produces-guessed-canonical-state",
+            "handoff-displays-current-emberflow-state",
+            "missing-transparency-fields-are-marked-unavailable",
+            "missing-workspace-root-fails-explicitly",
+            "post-mutation-transparency-reloads-canonical-state",
+            "root-declares-durable-track-transitions"
+          ],
+          "hash": "202efc099bf1010f3854eb631735f1362df9e63cfd88d192c6eadf4af94ef613"
+        },
+        "tests/package_metadata.rs": {
+          "covers": [
+            "durable-mutations-use-emberflow-surface"
+          ],
+          "hash": "f141875a6f41b9a1268ac30746b7e3c8dd7aa43f712e124436785cffd447e8ad"
+        },
+        "tests/product_cli.rs": {
+          "covers": [
+            "bootstrap-displays-required-transparency-fields",
+            "contract-applies-uniformly-to-all-clients",
+            "durable-mutations-use-emberflow-surface",
+            "handoff-displays-current-emberflow-state",
+            "missing-transparency-fields-are-marked-unavailable"
+          ],
+          "hash": "0d6a509755ab1c9f089f54a0c4df907de96d5d006c72a41725c4c9d4479e496b"
+        }
+      }
+    },
+    "specs/emberflow-execution-guard.spec": {
+      "behaviors": [
+        "claim-task-acquires-exclusive-lease",
+        "same-holder-reclaim-refreshes-lease",
+        "different-holder-claim-rejected",
+        "release-clears-lease",
+        "release-by-wrong-holder-fails",
+        "expired-lease-auto-cleared-on-access",
+        "event-record-gated-by-lease",
+        "task-event-requires-active-lease",
+        "lease-state-in-transparency",
+        "expire-stale-leases-bulk-cleanup",
+        "new-event-kinds-claim-release-lease-expired"
+      ],
+      "dependencies": [
+        "specs/emberflow-runtime-store.spec"
+      ],
+      "hash": "f53738eba5ebd979e309caf3df90eb23ce669bc4a8b32ca3fcb2a73c2dd3f9d9",
+      "nfrs": [],
+      "test_files": {
+        "tests/mcp_stdio.rs": {
+          "covers": [
+            "claim-task-acquires-exclusive-lease",
+            "release-clears-lease"
+          ],
+          "hash": "01c4940196f48b27767d25e9f6479c35dc22232d219acb3e39e0f417786e7674"
+        },
+        "tests/mcp_surface.rs": {
+          "covers": [
+            "claim-task-acquires-exclusive-lease",
+            "different-holder-claim-rejected",
+            "event-record-gated-by-lease",
+            "lease-state-in-transparency",
+            "new-event-kinds-claim-release-lease-expired",
+            "release-clears-lease",
+            "task-event-requires-active-lease"
+          ],
+          "hash": "1d5185660065d7adb33c3d093af7ff84a5ca043f97c00ad4152fa027a1064028"
+        },
+        "tests/runtime_store.rs": {
+          "covers": [
+            "claim-task-acquires-exclusive-lease",
+            "different-holder-claim-rejected",
+            "expire-stale-leases-bulk-cleanup",
+            "expired-lease-auto-cleared-on-access",
+            "release-by-wrong-holder-fails",
+            "release-clears-lease",
+            "same-holder-reclaim-refreshes-lease"
+          ],
+          "hash": "126af98c8a21d0c68309a8c51b7b30e216bfb5fbb270337cf68308a248475e75"
+        }
+      }
+    },
+    "specs/emberflow-mcp-stdio-transport.spec": {
+      "behaviors": [
+        "stdio-transport-starts-as-local-process",
+        "stdio-transport-initializes-over-stdio",
+        "stdio-transport-omits-resource-catalog-from-initialize",
+        "stdio-transport-uses-content-length-framed-json-rpc",
+        "stdio-transport-mirrors-client-framing",
+        "stdio-transport-advertises-stable-tool-surface",
+        "stdio-transport-omits-emberflow-bootstrap-extension-fields-from-initialize",
+        "stdio-transport-omits-runtime-bootstrap-fields-from-initialize",
+        "stdio-transport-resolves-workspace-root-from-current-directory",
+        "stdio-transport-honors-explicit-workspace-root",
+        "stdio-transport-honors-explicit-state-path-compatibility",
+        "stdio-transport-dispatches-canonical-track-reads",
+        "stdio-transport-lists-readable-resource-catalog",
+        "stdio-transport-lists-resource-templates-via-standard-mcp-method",
+        "stdio-transport-accepts-standard-initialized-notification",
+        "stdio-transport-reads-resource-views",
+        "stdio-transport-reads-resource-via-standard-mcp-method",
+        "stdio-transport-lists-tools-via-standard-mcp-method",
+        "stdio-transport-calls-tools-via-standard-mcp-method",
+        "stdio-transport-deletes-track-state-through-prefixed-tools",
+        "stdio-transport-rejects-unprefixed-tool-names",
+        "stdio-transport-returns-workspace-overview-view",
+        "stdio-transport-reads-workspace-overview-with-legacy-null-metadata",
+        "stdio-transport-returns-track-resume-view",
+        "stdio-transport-dispatches-canonical-runtime-writes",
+        "stdio-transport-rejects-unknown-method",
+        "stdio-transport-rejects-invalid-parameters",
+        "stdio-transport-reports-missing-project-state",
+        "stdio-transport-keeps-protocol-output-separate-from-diagnostics"
+      ],
+      "dependencies": [
+        "specs/emberflow-mcp-surface.spec",
+        "specs/emberflow-project-layout.spec"
+      ],
+      "hash": "3dff8b59c1c4396d56ae2771c93a861012613239e17d598a35af94d8b08a0e79",
+      "nfrs": [],
+      "test_files": {
+        "tests/mcp_stdio.rs": {
+          "covers": [
+            "stdio-transport-accepts-standard-initialized-notification",
+            "stdio-transport-advertises-stable-tool-surface",
+            "stdio-transport-calls-tools-via-standard-mcp-method",
+            "stdio-transport-deletes-track-state-through-prefixed-tools",
+            "stdio-transport-dispatches-canonical-runtime-writes",
+            "stdio-transport-dispatches-canonical-track-reads",
+            "stdio-transport-honors-explicit-state-path-compatibility",
+            "stdio-transport-honors-explicit-workspace-root",
+            "stdio-transport-initializes-over-stdio",
+            "stdio-transport-keeps-protocol-output-separate-from-diagnostics",
+            "stdio-transport-lists-readable-resource-catalog",
+            "stdio-transport-lists-resource-templates-via-standard-mcp-method",
+            "stdio-transport-lists-tools-via-standard-mcp-method",
+            "stdio-transport-mirrors-client-framing",
+            "stdio-transport-omits-emberflow-bootstrap-extension-fields-from-initialize",
+            "stdio-transport-omits-resource-catalog-from-initialize",
+            "stdio-transport-omits-runtime-bootstrap-fields-from-initialize",
+            "stdio-transport-reads-resource-via-standard-mcp-method",
+            "stdio-transport-reads-resource-views",
+            "stdio-transport-reads-workspace-overview-with-legacy-null-metadata",
+            "stdio-transport-rejects-invalid-parameters",
+            "stdio-transport-rejects-unknown-method",
+            "stdio-transport-rejects-unprefixed-tool-names",
+            "stdio-transport-reports-missing-project-state",
+            "stdio-transport-resolves-workspace-root-from-current-directory",
+            "stdio-transport-returns-track-resume-view",
+            "stdio-transport-returns-workspace-overview-view",
+            "stdio-transport-starts-as-local-process",
+            "stdio-transport-uses-content-length-framed-json-rpc"
+          ],
+          "hash": "01c4940196f48b27767d25e9f6479c35dc22232d219acb3e39e0f417786e7674"
+        }
+      }
+    },
+    "specs/emberflow-mcp-surface.spec": {
+      "behaviors": [
+        "mcp-initializes-with-capability-discovery",
+        "mcp-initializes-with-self-description",
+        "mcp-initializes-with-resource-discovery",
+        "mcp-initializes-with-track-bootstrap",
+        "mcp-initializes-with-workspace-db-metadata",
+        "mcp-initializes-with-canonical-mode-by-default",
+        "mcp-initializes-with-configured-projection-mode",
+        "mcp-records-canonical-event",
+        "mcp-creates-task-with-canonical-visibility",
+        "mcp-creates-task-with-generic-executor-fallback",
+        "mcp-reads-track-record-resource",
+        "mcp-reads-track-events-resource",
+        "mcp-reads-empty-track-events-resource",
+        "mcp-rejects-unsupported-event-kind",
+        "mcp-reads-track-context-resource",
+        "mcp-lists-readable-resource-catalog",
+        "mcp-reads-workspace-overview-resource",
+        "mcp-reads-track-resume-resource",
+        "mcp-reads-track-runtime-resource",
+        "mcp-reads-track-transparency-resource",
+        "mcp-reads-task-visibility-resource",
+        "mcp-reads-client-contract-resource",
+        "mcp-reads-empty-track-context-resource",
+        "mcp-reads-track-brief-resource",
+        "mcp-reads-empty-track-brief-resource",
+        "mcp-reads-track-plan-resource",
+        "mcp-reads-empty-track-plan-resource",
+        "mcp-upserts-canonical-track-metadata",
+        "mcp-updates-canonical-track-metadata",
+        "mcp-rejects-invalid-track-brief-section",
+        "mcp-rejects-invalid-track-plan-item-placement",
+        "mcp-manual-archive-requires-terminal-track-status",
+        "mcp-replaces-canonical-track-brief",
+        "mcp-replaces-canonical-track-plan"
+      ],
+      "dependencies": [
+        "specs/emberflow-project-layout.spec"
+      ],
+      "hash": "0975bd88d76a721e7020f19068c0d91f7ba2c19b6af363bb91e658a3b1dfb34a",
+      "nfrs": [],
+      "test_files": {
+        "tests/emberflow_v1.rs": {
+          "covers": [
+            "mcp-initializes-with-workspace-db-metadata",
+            "mcp-manual-archive-requires-terminal-track-status"
+          ],
+          "hash": "9b16699c5f535b3fc6885797380c4d71d8a86956044986ef44fe368c81e45fd9"
+        },
+        "tests/mcp_stdio.rs": {
+          "covers": [
+            "mcp-creates-task-with-generic-executor-fallback"
+          ],
+          "hash": "01c4940196f48b27767d25e9f6479c35dc22232d219acb3e39e0f417786e7674"
+        },
+        "tests/mcp_surface.rs": {
+          "covers": [
+            "mcp-creates-task-with-canonical-visibility",
+            "mcp-creates-task-with-generic-executor-fallback",
+            "mcp-initializes-with-canonical-mode-by-default",
+            "mcp-initializes-with-capability-discovery",
+            "mcp-initializes-with-configured-projection-mode",
+            "mcp-initializes-with-resource-discovery",
+            "mcp-initializes-with-self-description",
+            "mcp-initializes-with-track-bootstrap",
+            "mcp-initializes-with-workspace-db-metadata",
+            "mcp-lists-readable-resource-catalog",
+            "mcp-manual-archive-requires-terminal-track-status",
+            "mcp-reads-client-contract-resource",
+            "mcp-reads-empty-track-brief-resource",
+            "mcp-reads-empty-track-context-resource",
+            "mcp-reads-empty-track-events-resource",
+            "mcp-reads-empty-track-plan-resource",
+            "mcp-reads-task-visibility-resource",
+            "mcp-reads-track-brief-resource",
+            "mcp-reads-track-context-resource",
+            "mcp-reads-track-events-resource",
+            "mcp-reads-track-plan-resource",
+            "mcp-reads-track-record-resource",
+            "mcp-reads-track-resume-resource",
+            "mcp-reads-track-runtime-resource",
+            "mcp-reads-track-transparency-resource",
+            "mcp-reads-workspace-overview-resource",
+            "mcp-records-canonical-event",
+            "mcp-rejects-invalid-track-brief-section",
+            "mcp-rejects-invalid-track-plan-item-placement",
+            "mcp-rejects-unsupported-event-kind",
+            "mcp-replaces-canonical-track-brief",
+            "mcp-replaces-canonical-track-plan",
+            "mcp-updates-canonical-track-metadata",
+            "mcp-upserts-canonical-track-metadata"
+          ],
+          "hash": "1d5185660065d7adb33c3d093af7ff84a5ca043f97c00ad4152fa027a1064028"
+        }
+      }
+    },
+    "specs/emberflow-project-layout.spec": {
+      "behaviors": [
+        "emberflow-resolves-project-root-from-git-common-dir",
+        "emberflow-falls-back-to-local-root-without-git",
+        "emberflow-honors-config-root-override",
+        "emberflow-runtime-new-keeps-legacy-db-path",
+        "emberflow-surface-new-keeps-legacy-db-path",
+        "emberflow-projects-filesystem-artifacts-under-emberflow"
+      ],
+      "dependencies": [],
+      "hash": "02b3933af6f4d699f1cb58a308c92851e928c6f00bc1c1f5c41dfc9f3770aee8",
+      "nfrs": [],
+      "test_files": {
+        "tests/project_layout.rs": {
+          "covers": [
+            "emberflow-falls-back-to-local-root-without-git",
+            "emberflow-honors-config-root-override",
+            "emberflow-projects-filesystem-artifacts-under-emberflow",
+            "emberflow-resolves-project-root-from-git-common-dir",
+            "emberflow-runtime-new-keeps-legacy-db-path",
+            "emberflow-surface-new-keeps-legacy-db-path"
+          ],
+          "hash": "682ebbaddb8e39ddfa04c9a739e62e7afa22741140074d7bd7659004a935db34"
+        }
+      }
+    },
+    "specs/emberflow-projection-engine.spec": {
+      "behaviors": [
+        "progress-projects-to-plain-text-chat",
+        "progress-projects-to-runtime-status-line",
+        "progress-runtime-inherits-canonical-task-state",
+        "progress-runtime-respects-explicit-overrides",
+        "transient-progress-does-not-mutate-track",
+        "blocker-projects-durable-track-state",
+        "handoff-projects-track-to-review",
+        "projected-mode-materializes-track-filesystem-view",
+        "projected-filesystem-views-are-rendered-from-canonical-sqlite-state",
+        "canonical-write-attempts-immediate-projection-refresh",
+        "projected-filesystem-refresh-is-atomic",
+        "successful-projection-refresh-clears-dirty-targets",
+        "projection-failure-preserves-canonical-write",
+        "dirty-projections-retry-on-later-access",
+        "canonical-mode-does-not-materialize-projected-files"
+      ],
+      "dependencies": [
+        "specs/emberflow-project-layout.spec"
+      ],
+      "hash": "812a3274351ac5d386f13d1eb62e4d051de7bbff5d6f642fa29dc0734f516a6c",
+      "nfrs": [],
+      "test_files": {
+        "tests/mcp_stdio.rs": {
+          "covers": [
+            "progress-runtime-inherits-canonical-task-state"
+          ],
+          "hash": "01c4940196f48b27767d25e9f6479c35dc22232d219acb3e39e0f417786e7674"
+        },
+        "tests/projection_dirty_targets.rs": {
+          "covers": [
+            "canonical-mode-does-not-materialize-projected-files",
+            "canonical-write-attempts-immediate-projection-refresh",
+            "dirty-projections-retry-on-later-access",
+            "projected-filesystem-refresh-is-atomic",
+            "projected-filesystem-views-are-rendered-from-canonical-sqlite-state",
+            "projected-mode-materializes-track-filesystem-view",
+            "projection-failure-preserves-canonical-write",
+            "successful-projection-refresh-clears-dirty-targets"
+          ],
+          "hash": "8b24d2ba7e5b91d5860ec11c4f7c22bd37e36a035b733a8252e2b8397d41e9e3"
+        },
+        "tests/projection_engine.rs": {
+          "covers": [
+            "blocker-projects-durable-track-state",
+            "handoff-projects-track-to-review",
+            "progress-projects-to-plain-text-chat",
+            "progress-projects-to-runtime-status-line",
+            "progress-runtime-inherits-canonical-task-state",
+            "progress-runtime-respects-explicit-overrides",
+            "transient-progress-does-not-mutate-track"
+          ],
+          "hash": "3d543e2a4ab471dd4bc10793563e30e6576cda1e80eed45d34d8de22cc91c615"
+        }
+      }
+    },
+    "specs/emberflow-runtime-store.spec": {
+      "behaviors": [
+        "create-track-with-durable-status",
+        "create-task-with-runtime-state",
+        "create-task-without-visibility-metadata",
+        "create-task-with-visibility-context",
+        "create-plan-review-task-with-need-input",
+        "standalone-task-does-not-require-track",
+        "record-event-with-track-and-task-context",
+        "update-task-runtime-state",
+        "store-multiple-projections-for-one-event",
+        "invalid-status-is-rejected",
+        "invalid-task-status-is-rejected",
+        "delete-track-removes-associated-runtime-state"
+      ],
+      "dependencies": [],
+      "hash": "92392dc1aaa056213845fc3c31066e01f5035ad2a0ed27e4b0ad2d865d2588c6",
+      "nfrs": [],
+      "test_files": {
+        "tests/mcp_surface.rs": {
+          "covers": [
+            "delete-track-removes-associated-runtime-state"
+          ],
+          "hash": "1d5185660065d7adb33c3d093af7ff84a5ca043f97c00ad4152fa027a1064028"
+        },
+        "tests/runtime_store.rs": {
+          "covers": [
+            "create-plan-review-task-with-need-input",
+            "create-task-with-runtime-state",
+            "create-task-with-visibility-context",
+            "create-task-without-visibility-metadata",
+            "create-track-with-durable-status",
+            "delete-track-removes-associated-runtime-state",
+            "invalid-status-is-rejected",
+            "invalid-task-status-is-rejected",
+            "record-event-with-track-and-task-context",
+            "standalone-task-does-not-require-track",
+            "store-multiple-projections-for-one-event",
+            "update-task-runtime-state"
+          ],
+          "hash": "126af98c8a21d0c68309a8c51b7b30e216bfb5fbb270337cf68308a248475e75"
+        }
+      }
+    },
+    "specs/emberflow-v1.spec": {
+      "behaviors": [
+        "emberflow-v1-persists-canonical-track-context",
+        "emberflow-v1-resolves-shared-project-db-path",
+        "emberflow-v1-falls-back-to-local-root-without-git",
+        "emberflow-v1-persists-canonical-runtime-state",
+        "emberflow-v1-surfaces-canonical-task-visibility",
+        "emberflow-v1-treats-context-status-as-projection",
+        "emberflow-v1-exposes-queryable-runtime-tools",
+        "emberflow-v1-rejects-runtime-writes-outside-the-protocol"
+      ],
+      "dependencies": [
+        "specs/emberflow-runtime-store.spec",
+        "specs/emberflow-projection-engine.spec",
+        "specs/emberflow-mcp-surface.spec",
+        "specs/emberflow-canonical-track-model.spec",
+        "specs/emberflow-project-layout.spec"
+      ],
+      "hash": "907f1145632c33a5ce27497c10c42bddcbb337ac44a3f95fcf9a00ad5d1356d8",
+      "nfrs": [],
+      "test_files": {
+        "tests/emberflow_v1.rs": {
+          "covers": [
+            "emberflow-v1-exposes-queryable-runtime-tools",
+            "emberflow-v1-persists-canonical-runtime-state",
+            "emberflow-v1-persists-canonical-track-context",
+            "emberflow-v1-rejects-runtime-writes-outside-the-protocol",
+            "emberflow-v1-surfaces-canonical-task-visibility",
+            "emberflow-v1-treats-context-status-as-projection"
+          ],
+          "hash": "9b16699c5f535b3fc6885797380c4d71d8a86956044986ef44fe368c81e45fd9"
+        },
+        "tests/project_layout.rs": {
+          "covers": [
+            "emberflow-v1-falls-back-to-local-root-without-git",
+            "emberflow-v1-resolves-shared-project-db-path"
+          ],
+          "hash": "682ebbaddb8e39ddfa04c9a739e62e7afa22741140074d7bd7659004a935db34"
+        }
+      }
+    }
+  },
+  "version": 1
+}

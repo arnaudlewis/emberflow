@@ -1,0 +1,459 @@
+name: EmberFlow Release
+run-name: "${{ inputs.execute && '[Prod]' || '[DryRun]' }} EmberFlow Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: "Perform the release (unchecked = dry run, checked = bump + tag + build + publish)"
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+  TAP_REPO: arnaudlewis/homebrew-tap
+
+jobs:
+  prepare:
+    name: Prepare Release
+    runs-on: ubuntu-latest
+    outputs:
+      bump: ${{ steps.bump.outputs.bump }}
+      new_version: ${{ steps.bump.outputs.new_version }}
+      new_tag: ${{ steps.bump.outputs.new_tag }}
+      commits: ${{ steps.bump.outputs.commits }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Determine version bump
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          LAST_TAG="$(git tag --list 'emberflow-v*' --sort=-v:refname | head -n 1 || true)"
+          if [[ -z "$LAST_TAG" ]]; then
+            echo "No previous EmberFlow tag found. Starting from first commit."
+            COMMITS="$(git log --oneline --no-decorate)"
+            CURRENT="0.0.0"
+          else
+            echo "Last EmberFlow release: $LAST_TAG"
+            COMMITS="$(git log "${LAST_TAG}..HEAD" --oneline --no-decorate)"
+            CURRENT="${LAST_TAG#emberflow-v}"
+          fi
+
+          if [[ -z "$COMMITS" ]]; then
+            echo "No commits since last release."
+            printf 'bump=none\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          BUMP="none"
+          while IFS= read -r line; do
+            MSG="${line#* }"
+            if echo "$MSG" | grep -qiE 'BREAKING CHANGE|^[a-z]+(\(.+\))?!:'; then
+              BUMP="major"
+              break
+            fi
+            if echo "$MSG" | grep -qE '^feat(\(.+\))?:'; then
+              [[ "$BUMP" != "major" ]] && BUMP="minor"
+            fi
+            if echo "$MSG" | grep -qE '^(fix|perf|refactor|docs)(\(.+\))?:'; then
+              [[ "$BUMP" == "none" ]] && BUMP="patch"
+            fi
+          done <<< "$COMMITS"
+
+          if [[ "$BUMP" == "none" ]]; then
+            echo "No releasable commits (only test/ci/chore)."
+            printf 'bump=none\n' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+          NEW_TAG="emberflow-v${NEW_VERSION}"
+
+          {
+            printf 'bump=%s\n' "$BUMP"
+            printf 'new_version=%s\n' "$NEW_VERSION"
+            printf 'new_tag=%s\n' "$NEW_TAG"
+            printf 'commits<<EOF\n%s\nEOF\n' "$COMMITS"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog preview
+        if: steps.bump.outputs.bump != 'none'
+        id: changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --unreleased --tag ${{ steps.bump.outputs.new_tag }} --strip header
+
+      - name: Print summary
+        shell: bash
+        env:
+          CHANGELOG_PREVIEW: ${{ steps.changelog.outputs.content }}
+        run: |
+          set -euo pipefail
+
+          echo "## EmberFlow Release Preview" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+
+          BUMP="${{ steps.bump.outputs.bump }}"
+          if [[ "$BUMP" == "none" ]]; then
+            echo "No releasable commits found. Nothing to do." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          echo "**Bump type:** $BUMP" >> "$GITHUB_STEP_SUMMARY"
+          echo "**New version:** ${{ steps.bump.outputs.new_version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "**New tag:** ${{ steps.bump.outputs.new_tag }}" >> "$GITHUB_STEP_SUMMARY"
+
+          if [[ "${{ inputs.execute }}" == "true" ]]; then
+            echo "**Mode:** Execute (tag, build, publish, and update tap)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "**Mode:** Dry run (CI plus build/package validation only; no tag, publish, or tap update)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### Changelog preview" >> "$GITHUB_STEP_SUMMARY"
+          printf '%s\n' "$CHANGELOG_PREVIEW" >> "$GITHUB_STEP_SUMMARY"
+
+  ci:
+    name: CI Gate
+    needs: prepare
+    if: needs.prepare.outputs.bump != 'none'
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install Minter
+        run: brew install arnaudlewis/tap/minter
+
+      - name: Check formatting
+        run: cargo fmt --all --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Run release gate
+        run: bash tests/ci.sh
+
+  tag:
+    name: Bump & Tag
+    needs: [prepare, ci]
+    if: inputs.execute && needs.prepare.outputs.bump != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Configure git
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          NEW_VERSION="${{ needs.prepare.outputs.new_version }}"
+          sed -i "0,/^version = \"[^\"]*\"/{s/^version = \"[^\"]*\"/version = \"${NEW_VERSION}\"/}" Cargo.toml
+          cargo check --quiet
+
+          if git diff --quiet -- Cargo.toml Cargo.lock; then
+            echo "Version already set to ${NEW_VERSION}; tagging current HEAD."
+            printf 'changed=false\n' >> "$GITHUB_OUTPUT"
+          else
+            printf 'changed=true\n' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and tag
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          NEW_TAG="${{ needs.prepare.outputs.new_tag }}"
+
+          if [[ "${{ steps.version.outputs.changed }}" == "true" ]]; then
+            git add Cargo.toml Cargo.lock
+            git commit -m "chore(emberflow): release ${NEW_TAG}"
+          else
+            echo "No version file changes to commit."
+          fi
+
+          git tag -a "$NEW_TAG" -m "Release ${NEW_TAG}"
+          git push origin HEAD:${{ github.ref_name }}
+          git push origin "$NEW_TAG"
+
+  build:
+    name: Build (${{ matrix.target }})
+    needs: [prepare, ci, tag]
+    if: >-
+      always() &&
+      needs.prepare.outputs.bump != 'none' &&
+      needs.ci.result == 'success' &&
+      (needs.tag.result == 'success' || needs.tag.result == 'skipped')
+    runs-on: ${{ matrix.os }}
+    env:
+      CARGO_TARGET_DIR: target
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            os: macos-14
+          - target: x86_64-apple-darwin
+            os: macos-14
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            cross: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.tag.result == 'success' && needs.prepare.outputs.new_tag || github.sha }}
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Install cross
+        if: matrix.cross
+        run: cargo install cross --locked
+
+      - name: Build (cross)
+        if: matrix.cross
+        run: cross build --release --target ${{ matrix.target }}
+
+      - name: Build (native)
+        if: ${{ !matrix.cross }}
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package release artifact
+        shell: bash
+        env:
+          TAG_NAME: ${{ needs.prepare.outputs.new_tag }}
+          PLATFORM: ${{ matrix.target }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p release
+          STAGING="release/staging"
+          ARCHIVE="release/emberflow-${TAG_NAME}-${PLATFORM}.tar.gz"
+
+          mkdir -p "$STAGING"
+          cp "target/${PLATFORM}/release/emberflow" "$STAGING/"
+          cp "target/${PLATFORM}/release/emberflow-mcp" "$STAGING/"
+          cp README.md "$STAGING/README.md"
+          cp LICENSE "$STAGING/LICENSE"
+
+          tar -czf "$ARCHIVE" -C "$STAGING" .
+          echo "ARCHIVE=$ARCHIVE" >> "$GITHUB_ENV"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ env.ARCHIVE }}
+
+  publish:
+    name: Publish Release
+    needs: [prepare, build]
+    if: inputs.execute && needs.prepare.outputs.bump != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.prepare.outputs.new_tag }}
+          fetch-depth: 0
+
+      - name: Generate release changelog
+        id: changelog
+        uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: --latest --strip header
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+
+      - name: Collect archives
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p release
+          find artifacts -type f -name '*.tar.gz' -exec mv {} release/ \;
+
+      - name: Generate release checksums
+        shell: bash
+        working-directory: release
+        run: sha256sum * > SHA256SUMS.txt
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.new_tag }}
+          name: "EmberFlow ${{ needs.prepare.outputs.new_tag }}"
+          draft: false
+          generate_release_notes: false
+          body: |
+            ${{ steps.changelog.outputs.content }}
+
+            ## Install
+
+            ```bash
+            brew install arnaudlewis/tap/emberflow
+            ```
+
+            ## Manual download
+
+            Download the archive that matches your platform, extract it, and place `emberflow` and `emberflow-mcp` on your PATH.
+          files: |
+            release/*
+
+  update-tap:
+    name: Update Homebrew Tap
+    needs: [prepare, publish]
+    if: inputs.execute && needs.prepare.outputs.bump != 'none'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+
+      - name: Collect archives
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p release
+          find artifacts -type f -name '*.tar.gz' -exec mv {} release/ \;
+
+      - name: Compute checksums
+        id: shas
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          cd release
+          echo "sha_darwin_arm64=$(sha256sum emberflow-${{ needs.prepare.outputs.new_tag }}-aarch64-apple-darwin.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_darwin_x86=$(sha256sum emberflow-${{ needs.prepare.outputs.new_tag }}-x86_64-apple-darwin.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_linux_x86=$(sha256sum emberflow-${{ needs.prepare.outputs.new_tag }}-x86_64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sha_linux_arm64=$(sha256sum emberflow-${{ needs.prepare.outputs.new_tag }}-aarch64-unknown-linux-gnu.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout homebrew-tap
+        uses: actions/checkout@v5
+        with:
+          repository: ${{ env.TAP_REPO }}
+          token: ${{ secrets.RELEASE_TOKEN }}
+          path: tap
+
+      - name: Update formula
+        shell: bash
+        env:
+          VERSION: ${{ needs.prepare.outputs.new_version }}
+          TAG: ${{ needs.prepare.outputs.new_tag }}
+          SHA_DARWIN_ARM64: ${{ steps.shas.outputs.sha_darwin_arm64 }}
+          SHA_DARWIN_X86: ${{ steps.shas.outputs.sha_darwin_x86 }}
+          SHA_LINUX_X86: ${{ steps.shas.outputs.sha_linux_x86 }}
+          SHA_LINUX_ARM64: ${{ steps.shas.outputs.sha_linux_arm64 }}
+        run: |
+          set -euo pipefail
+
+          mkdir -p tap/Formula
+          REPO="${{ github.repository }}"
+          BASE_URL="https://github.com/${REPO}/releases/download/${TAG}"
+
+          cat > tap/Formula/emberflow.rb << FORMULA
+          class EmberFlow < Formula
+            desc "Local-first canonical MCP runtime and product surface for EmberFlow"
+            homepage "https://github.com/${REPO}"
+            version "${VERSION}"
+            license "MIT"
+
+            on_macos do
+              if Hardware::CPU.arm?
+                url "${BASE_URL}/emberflow-${TAG}-aarch64-apple-darwin.tar.gz"
+                sha256 "${SHA_DARWIN_ARM64}"
+              else
+                url "${BASE_URL}/emberflow-${TAG}-x86_64-apple-darwin.tar.gz"
+                sha256 "${SHA_DARWIN_X86}"
+              end
+            end
+
+            on_linux do
+              if Hardware::CPU.arm?
+                url "${BASE_URL}/emberflow-${TAG}-aarch64-unknown-linux-gnu.tar.gz"
+                sha256 "${SHA_LINUX_ARM64}"
+              else
+                url "${BASE_URL}/emberflow-${TAG}-x86_64-unknown-linux-gnu.tar.gz"
+                sha256 "${SHA_LINUX_X86}"
+              end
+            end
+
+            def install
+              bin.install "emberflow"
+              bin.install "emberflow-mcp"
+            end
+
+            test do
+              assert_match version.to_s, shell_output("#{bin}/emberflow --version")
+            end
+          end
+          FORMULA
+
+      - name: Push formula
+        shell: bash
+        working-directory: tap
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/emberflow.rb
+          git commit -m "chore: update emberflow formula to ${{ needs.prepare.outputs.new_tag }}"
+          git push
