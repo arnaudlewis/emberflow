@@ -1,6 +1,6 @@
 [package]
 name = "emberflow"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 description = "Local-first canonical MCP runtime and product surface for EmberFlow"
 license = "MIT"
