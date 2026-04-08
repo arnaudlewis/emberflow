@@ -140,6 +140,27 @@ behavior standalone-task-does-not-require-track [edge_case]
   then side_effect
     assert Track linkage remains optional for standalone runtime tasks
 
+behavior create-reviewing-task [happy_path]
+  "When a caller creates a task in the reviewing phase, EmberFlow persists it as a valid canonical execution state for cross-agent review workflows"
+
+  given
+    A caller is creating a review task on an existing track
+    @track = Track {{ id: "track-review-001" }}
+
+  when create-task
+    taskId = "task-review-001"
+    trackId = @track.id
+    title = "Cross-review auth middleware"
+    status = "running"
+    phase = "reviewing"
+    executor = "codex"
+
+  then returns taskRecord
+    assert id == "task-review-001"
+    assert status == "running"
+    assert phase == "reviewing"
+    assert executor == "codex"
+
 behavior record-event-with-track-and-task-context [happy_path]
   "When a caller records a canonical protocol event, EmberFlow persists the event with its task and track context"
 

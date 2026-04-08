@@ -20,7 +20,7 @@ pub const TASK_STATUSES: &[&str] = &[
     "cancelled",
 ];
 
-pub const PHASES: &[&str] = &["exploring", "planning", "implementing", "verifying"];
+pub const PHASES: &[&str] = &["exploring", "planning", "implementing", "reviewing", "verifying"];
 
 pub const RUNTIME_MESSAGES: &[&str] = &[
     "assign",

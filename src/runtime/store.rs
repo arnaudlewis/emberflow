@@ -269,7 +269,11 @@ impl RuntimeStore {
 
     fn connect(&self) -> Result<Connection> {
         let conn = Connection::open(&self.db_path)?;
-        conn.execute_batch("PRAGMA foreign_keys = ON;")?;
+        conn.execute_batch(
+            "PRAGMA foreign_keys = ON;
+             PRAGMA journal_mode = WAL;
+             PRAGMA busy_timeout = 5000;",
+        )?;
         Ok(conn)
     }
 
