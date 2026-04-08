@@ -323,6 +323,61 @@ fn emberflow_v1_rejects_manual_archive_for_active_tracks() {
     assert_eq!(track.status, "in-progress");
 }
 
+// @minter:integration emberflow-v1-supports-cross-runtime-review-visibility
+#[test]
+fn emberflow_v1_supports_cross_runtime_review_visibility() {
+    let tmp = tempdir().unwrap();
+    let runtime = EmberFlowRuntime::from_workspace_root(tmp.path()).unwrap();
+
+    runtime
+        .create_track("track-cross-review", "Cross-runtime review", "in-progress")
+        .unwrap();
+
+    runtime
+        .create_task(TaskInput {
+            task_id: "task-claude-review".to_string(),
+            track_id: Some("track-cross-review".to_string()),
+            title: "Claude reviews auth middleware".to_string(),
+            status: "done".to_string(),
+            phase: "reviewing".to_string(),
+            executor: Some("claude".to_string()),
+            agent_instance_id: None,
+            execution: None,
+            intent_summary: None,
+        })
+        .unwrap();
+
+    runtime
+        .create_task(TaskInput {
+            task_id: "task-codex-review".to_string(),
+            track_id: Some("track-cross-review".to_string()),
+            title: "Codex reviews auth middleware".to_string(),
+            status: "done".to_string(),
+            phase: "reviewing".to_string(),
+            executor: Some("codex".to_string()),
+            agent_instance_id: None,
+            execution: None,
+            intent_summary: None,
+        })
+        .unwrap();
+
+    let tasks = runtime.list_tasks().unwrap();
+    let review_tasks: Vec<_> = tasks
+        .iter()
+        .filter(|t| t.track_id.as_deref() == Some("track-cross-review"))
+        .collect();
+
+    assert_eq!(review_tasks.len(), 2);
+    let executors: std::collections::BTreeSet<_> = review_tasks
+        .iter()
+        .filter_map(|t| t.executor.as_deref())
+        .collect();
+    assert!(executors.contains("claude"));
+    assert!(executors.contains("codex"));
+    assert!(review_tasks.iter().all(|t| t.phase == "reviewing"));
+    assert!(review_tasks.iter().all(|t| t.status == "done"));
+}
+
 // @minter:integration emberflow-v1-rejects-runtime-writes-outside-the-protocol
 #[test]
 fn emberflow_v1_rejects_runtime_writes_outside_the_protocol() {

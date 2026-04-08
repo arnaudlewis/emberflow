@@ -130,6 +130,24 @@ behavior emberflow-v1-exposes-queryable-runtime-tools [happy_path]
     assert readsTrackState is_present
     assert readsRuntimeStatus is_present
 
+behavior emberflow-v1-supports-cross-runtime-review-visibility [happy_path]
+  "When multiple runtimes record review tasks on the same track, EmberFlow V1 surfaces canonical visibility for each executor so the orchestrator can aggregate cross-runtime review findings"
+
+  given
+    A track has review tasks from two different runtimes
+    @track = Track {{ id: "track-cross-review" }}
+    @claudeTask = Task {{ id: "task-claude-review", trackId: @track.id, status: "done", phase: "reviewing", executor: "claude" }}
+    @codexTask = Task {{ id: "task-codex-review", trackId: @track.id, status: "done", phase: "reviewing", executor: "codex" }}
+
+  when query-runtime-visibility
+    trackId = @track.id
+
+  then returns visibilityState
+    assert trackId == "track-cross-review"
+    assert source == "canonical"
+    assert tasks contains executor "claude"
+    assert tasks contains executor "codex"
+
 behavior emberflow-v1-rejects-runtime-writes-outside-the-protocol [error_case]
   "When a client attempts to write runtime state outside the shared protocol contract, EmberFlow V1 rejects the write instead of accepting ungoverned state"
 

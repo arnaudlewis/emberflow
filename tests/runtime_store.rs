@@ -170,6 +170,35 @@ fn standalone_task_does_not_require_track() {
     assert_eq!(task.intent_summary, None);
 }
 
+// @minter:unit create-reviewing-task
+#[test]
+fn create_reviewing_task() {
+    let tmp = tempdir().unwrap();
+    let store = RuntimeStore::new(tmp.path().join("emberflow.db")).unwrap();
+    store
+        .create_track("track-review-001", "Auth middleware review", "in-progress")
+        .unwrap();
+
+    let task = store
+        .create_task(TaskInput {
+            task_id: "task-review-001".to_string(),
+            track_id: Some("track-review-001".to_string()),
+            title: "Cross-review auth middleware".to_string(),
+            status: "running".to_string(),
+            phase: "reviewing".to_string(),
+            executor: Some("codex".to_string()),
+            agent_instance_id: None,
+            execution: None,
+            intent_summary: None,
+        })
+        .unwrap();
+
+    assert_eq!(task.id, "task-review-001");
+    assert_eq!(task.status, "running");
+    assert_eq!(task.phase, "reviewing");
+    assert_eq!(task.executor.as_deref(), Some("codex"));
+}
+
 // @minter:unit record-event-with-track-and-task-context
 #[test]
 fn record_event_with_track_and_task_context() {

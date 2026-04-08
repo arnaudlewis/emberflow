@@ -36,7 +36,7 @@
             "canonical-track-stores-ordered-brief-sections",
             "canonical-track-stores-ordered-plan-structure"
           ],
-          "hash": "126af98c8a21d0c68309a8c51b7b30e216bfb5fbb270337cf68308a248475e75"
+          "hash": "bb670d8eb41c353fb3fd7eaa16267b41f34ded73e703221999affd722788ec19"
         }
       }
     },
@@ -183,7 +183,7 @@
             "release-clears-lease",
             "same-holder-reclaim-refreshes-lease"
           ],
-          "hash": "126af98c8a21d0c68309a8c51b7b30e216bfb5fbb270337cf68308a248475e75"
+          "hash": "bb670d8eb41c353fb3fd7eaa16267b41f34ded73e703221999affd722788ec19"
         }
       }
     },
@@ -310,7 +310,7 @@
             "mcp-initializes-with-workspace-db-metadata",
             "mcp-manual-archive-requires-terminal-track-status"
           ],
-          "hash": "9b16699c5f535b3fc6885797380c4d71d8a86956044986ef44fe368c81e45fd9"
+          "hash": "6f294dd3121a565ff9505801c434c8b4cdb6288047e461ca3515c8e8e10ac89c"
         },
         "tests/mcp_stdio.rs": {
           "covers": [
@@ -450,6 +450,7 @@
         "create-task-with-visibility-context",
         "create-plan-review-task-with-need-input",
         "standalone-task-does-not-require-track",
+        "create-reviewing-task",
         "record-event-with-track-and-task-context",
         "update-task-runtime-state",
         "store-multiple-projections-for-one-event",
@@ -458,7 +459,7 @@
         "delete-track-removes-associated-runtime-state"
       ],
       "dependencies": [],
-      "hash": "92392dc1aaa056213845fc3c31066e01f5035ad2a0ed27e4b0ad2d865d2588c6",
+      "hash": "5b5ec8384790999098a563b3f3fc2fe05ecada87847860bd8c5bfce1af933353",
       "nfrs": [],
       "test_files": {
         "tests/mcp_surface.rs": {
@@ -470,6 +471,7 @@
         "tests/runtime_store.rs": {
           "covers": [
             "create-plan-review-task-with-need-input",
+            "create-reviewing-task",
             "create-task-with-runtime-state",
             "create-task-with-visibility-context",
             "create-task-without-visibility-metadata",
@@ -482,7 +484,7 @@
             "store-multiple-projections-for-one-event",
             "update-task-runtime-state"
           ],
-          "hash": "126af98c8a21d0c68309a8c51b7b30e216bfb5fbb270337cf68308a248475e75"
+          "hash": "bb670d8eb41c353fb3fd7eaa16267b41f34ded73e703221999affd722788ec19"
         }
       }
     },
@@ -495,6 +497,7 @@
         "emberflow-v1-surfaces-canonical-task-visibility",
         "emberflow-v1-treats-context-status-as-projection",
         "emberflow-v1-exposes-queryable-runtime-tools",
+        "emberflow-v1-supports-cross-runtime-review-visibility",
         "emberflow-v1-rejects-runtime-writes-outside-the-protocol"
       ],
       "dependencies": [
@@ -504,7 +507,7 @@
         "specs/emberflow-canonical-track-model.spec",
         "specs/emberflow-project-layout.spec"
       ],
-      "hash": "907f1145632c33a5ce27497c10c42bddcbb337ac44a3f95fcf9a00ad5d1356d8",
+      "hash": "a5468c08245677ea4551a1fbde1b33cc2de34c4ac2d3142c97cc4b665d193d09",
       "nfrs": [],
       "test_files": {
         "tests/emberflow_v1.rs": {
@@ -513,10 +516,11 @@
             "emberflow-v1-persists-canonical-runtime-state",
             "emberflow-v1-persists-canonical-track-context",
             "emberflow-v1-rejects-runtime-writes-outside-the-protocol",
+            "emberflow-v1-supports-cross-runtime-review-visibility",
             "emberflow-v1-surfaces-canonical-task-visibility",
             "emberflow-v1-treats-context-status-as-projection"
           ],
-          "hash": "9b16699c5f535b3fc6885797380c4d71d8a86956044986ef44fe368c81e45fd9"
+          "hash": "6f294dd3121a565ff9505801c434c8b4cdb6288047e461ca3515c8e8e10ac89c"
         },
         "tests/project_layout.rs": {
           "covers": [

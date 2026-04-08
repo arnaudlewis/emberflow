@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS tasks (
     status IN ('queued', 'running', 'need-input', 'blocked', 'awaiting-review', 'done', 'failed', 'cancelled')
   ),
   phase TEXT NOT NULL CHECK (
-    phase IN ('exploring', 'planning', 'implementing', 'verifying')
+    phase IN ('exploring', 'planning', 'implementing', 'reviewing', 'verifying')
   ),
   executor TEXT,
   agent_instance_id TEXT,
